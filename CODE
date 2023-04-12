@@ -1,1 +1,20 @@
-?H
+#include <Stepper.h>
+#include <SoftwareSerial.h>
+
+#define STEPS 100
+
+SoftwareSerial Bluetooth(6, 7);
+Stepper stepper(STEPS,5, 10, 9, 11);
+
+void setup() {
+  Bluetooth.begin(9600);
+}
+
+void loop() {
+  if (Bluetooth.available()) {
+    char input = Bluetooth.read();
+    int value = Bluetooth.parseInt();
+    stepper.setSpeed(map(value, 0, 100, -255, 255));
+      stepper.setSpeed(value);
+  }
+  }
