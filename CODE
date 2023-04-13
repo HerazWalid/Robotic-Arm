@@ -1,20 +1,32 @@
-#include <AccelStepper.h>
-#include <SoftwareSerial.h>
-
-#define STEPS 100
-
-SoftwareSerial Bluetooth(6, 7);
-AccelStepper AccelStepper(5, 10, 9, 11);
+#include <Stepper.h>
+#include<SoftwareSerial.h>
+#define stepsPerRevolution 2048
+int motspeed = 12;
+Stepper mystepper(stepsPerRevolution, 4,6 ,5,7);
+Stepper mystepper2(stepsPerRevolution, 8,10 ,9,11);
+SoftwareSerial Bluetooth(12, 13);
 
 void setup() {
   Bluetooth.begin(9600);
+  Serial.begin(9600);
+  mystepper.setSpeed(motspeed);
+  mystepper2.setSpeed(motspeed);
 }
-
 void loop() {
   if (Bluetooth.available()) {
     char input = Bluetooth.read();
     int value = Bluetooth.parseInt();
-    AccelStepper.setSpeed(map(value, 0, 100, -255, 255));
-    AccelStepper.runSpeed();
+    bool command;
+     switch (command) {
+      case '0':
+        mystepper.setSpeed(0);
+         break;
+      case '1':
+        mystepper.setSpeed(motspeed);
+        break;
+      default:
+        break;
+      }
+  
   }
-}
+} 
