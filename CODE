@@ -1,32 +1,85 @@
+#include <SoftwareSerial.h>
 #include <Stepper.h>
-#include<SoftwareSerial.h>
-#define stepsPerRevolution 2048
-int motspeed = 12;
-Stepper mystepper(stepsPerRevolution, 4,6 ,5,7);
-Stepper mystepper2(stepsPerRevolution, 8,10 ,9,11);
-SoftwareSerial Bluetooth(12, 13);
+#include <Servo.h>
+
+#define RX_PIN 2
+#define TX_PIN 3
+
+
+#define STEPPER_PIN_1 8
+#define STEPPER_PIN_2 10
+#define STEPPER_PIN_3 9
+#define STEPPER_PIN_4 11
+#define SERVO_PIN 5
+Servo servo;
+
+#define STEPS_PER_REVOLUTION 64
+#define STEPS_PER_REVOLUTION_2 1024
+#define SPEED 15
+#define SPEED_2 13
+
+#define FORWARD 'f'
+#define FORWARDS 'p'
+#define REVERSE 'r'
+#define REVERSES 'n'
+#define STOP 's'
+
+SoftwareSerial bluetooth(RX_PIN, TX_PIN);
+
+Stepper stepper(STEPS_PER_REVOLUTION, STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
+Stepper stepper2(STEPS_PER_REVOLUTION_2, STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
 
 void setup() {
-  Bluetooth.begin(9600);
   Serial.begin(9600);
-  mystepper.setSpeed(motspeed);
-  mystepper2.setSpeed(motspeed);
+
+  bluetooth.begin(9600);
+
+  stepper.setSpeed(SPEED);
+  stepper2.setSpeed(SPEED_2);
+
+  servo.attach(SERVO_PIN);
 }
+
 void loop() {
-  if (Bluetooth.available()) {
-    char input = Bluetooth.read();
-    int value = Bluetooth.parseInt();
-    bool command;
-     switch (command) {
-      case '0':
-        mystepper.setSpeed(0);
-         break;
-      case '1':
-        mystepper.setSpeed(motspeed);
+  if (bluetooth.available()) {
+    char command = (char)bluetooth.read();
+
+    Serial.println(command);
+
+    
+    switch (command) {
+      case FORWARD:
+        stepper.step(STEPS_PER_REVOLUTION);
+        
+        break;
+      case REVERSE:
+        stepper.step(-STEPS_PER_REVOLUTION);
+        
+        break;
+      case FORWARDS:
+        stepper2.step(STEPS_PER_REVOLUTION_2);
+        
+        break;
+      case REVERSES:
+
+        stepper2.step(-STEPS_PER_REVOLUTION_2);
+      
+     
+        break;
+      case 'a':
+        servo.write(0);
+        break;
+      case 'b': 
+        servo.write(90);
+        break;
+      case 'c':
+        servo.write(180);
         break;
       default:
+
+
+        Serial.println("Error: unrecognized command");
         break;
-      }
-  
+    }
   }
-} 
+}
