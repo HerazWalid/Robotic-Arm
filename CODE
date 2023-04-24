@@ -10,24 +10,39 @@
 #define STEPPER_PIN_2 10
 #define STEPPER_PIN_3 9
 #define STEPPER_PIN_4 11
-#define SERVO_PIN 5
+#define STEPPER_PIN_5 4
+#define STEPPER_PIN_6 6
+#define STEPPER_PIN_7 5
+#define STEPPER_PIN_8 7
+#define STEPPER_PIN_9 A0
+#define STEPPER_PIN_10 A2
+#define STEPPER_PIN_11 A1
+#define STEPPER_PIN_12 A3
+
+#define SERVO_PIN 12
 Servo servo;
 
-#define STEPS_PER_REVOLUTION 64
-#define STEPS_PER_REVOLUTION_2 1024
-#define SPEED 15
-#define SPEED_2 13
+#define STEPS_PER_REVOLUTION 128
+#define STEPS_PER_REVOLUTION_2 128
+#define STEPS_PER_REVOLUTION_3 128
+#define SPEED 60
+#define SPEED_2 60
+#define SPEED_3 60
+
 
 #define FORWARD 'f'
-#define FORWARDS 'p'
+#define FORWARD2 'p'
+#define FORWARD3 'g'
+
 #define REVERSE 'r'
-#define REVERSES 'n'
-#define STOP 's'
+#define REVERSE2 'n'
+#define REVERSE3 'l'
 
 SoftwareSerial bluetooth(RX_PIN, TX_PIN);
 
 Stepper stepper(STEPS_PER_REVOLUTION, STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
-Stepper stepper2(STEPS_PER_REVOLUTION_2, STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
+Stepper stepper2(STEPS_PER_REVOLUTION_2, STEPPER_PIN_5, STEPPER_PIN_6, STEPPER_PIN_7, STEPPER_PIN_8);
+Stepper stepper3(STEPS_PER_REVOLUTION_3, STEPPER_PIN_9, STEPPER_PIN_10, STEPPER_PIN_11, STEPPER_PIN_12);
 
 void setup() {
   Serial.begin(9600);
@@ -36,6 +51,7 @@ void setup() {
 
   stepper.setSpeed(SPEED);
   stepper2.setSpeed(SPEED_2);
+  stepper3.setSpeed(SPEED_3);
 
   servo.attach(SERVO_PIN);
 }
@@ -56,16 +72,25 @@ void loop() {
         stepper.step(-STEPS_PER_REVOLUTION);
         
         break;
-      case FORWARDS:
+      case FORWARD2:
         stepper2.step(STEPS_PER_REVOLUTION_2);
         
         break;
-      case REVERSES:
+      case REVERSE2:
 
         stepper2.step(-STEPS_PER_REVOLUTION_2);
       
      
         break;
+      case FORWARD3:
+        stepper3.step(STEPS_PER_REVOLUTION_3);
+        break;
+      case REVERSE3:
+
+        stepper3.step(-STEPS_PER_REVOLUTION_3);
+     
+        break;
+      
       case 'a':
         servo.write(0);
         break;
