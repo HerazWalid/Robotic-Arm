@@ -126,7 +126,10 @@ void loop() {
       stepper3.step(-2048);   
       if (r > Color_Detection_Value) {
     Serial.println("Red detected!");
-    stepper.step(0); }
+    stepper.step(0);
+    stepper2.step(2048);
+    stepper3.step(2048);
+    servo.write(180);}
       else {
     stepper.step(STEPS_PER_REVOLUTION);
     
