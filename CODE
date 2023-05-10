@@ -1,301 +1,5 @@
-#include <SoftwareSerial.h>
-#include <AccelStepper.h>
-#include <Servo.h>
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_TCS34725.h>
-#include <Adafruit_I2CDevice.h>
-
-#define RX_PIN 2
-#define TX_PIN 3
-
-
-
-#define STEPPER_PIN_1 8
-#define STEPPER_PIN_2 10
-#define STEPPER_PIN_3 9
-#define STEPPER_PIN_4 11
-#define STEPPER_PIN_5 4
-#define STEPPER_PIN_6 6
-#define STEPPER_PIN_7 5
-#define STEPPER_PIN_8 7
-#define STEPPER_PIN_9 A0
-#define STEPPER_PIN_10 A2
-#define STEPPER_PIN_11 A1
-#define STEPPER_PIN_12 A3
-
-#define SERVO_PIN 12
-Servo servo;
-
-#define STEPS_PER_REVOLUTION 2048
-#define STEPS_PER_REVOLUTION_2 128
-#define STEPS_PER_REVOLUTION_3 128
-#define SPEED 13
-#define SPEED_2 60
-#define SPEED_3 60
-
-#define ACCELERATION 1000
-#define FORWARD 'f'
-#define FORWARD2 'p'
-#define FORWARD3 'g'
-
-#define REVERSE 'r'
-#define REVERSE2 'n'
-#define REVERSE3 'l'
-
-
-SoftwareSerial bluetooth(RX_PIN, TX_PIN);
-
-AccelStepper stepper(AccelStepper::FULL4WIRE, STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
-AccelStepper stepper2(AccelStepper::FULL4WIRE, STEPPER_PIN_5, STEPPER_PIN_6, STEPPER_PIN_7, STEPPER_PIN_8);
-AccelStepper stepper3(AccelStepper::FULL4WIRE, STEPPER_PIN_9, STEPPER_PIN_10, STEPPER_PIN_11, STEPPER_PIN_12);
-
-#define commonAnode true
-byte gammatable[256];
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
-
-uint16_t r, g, b, c;
-
-void setup() {
-  Serial.begin(9600);
-
-  bluetooth.begin(9600);
-
-  stepper.setMaxSpeed(SPEED);
-  stepper.setAcceleration(ACCELERATION);
-
-  stepper2.setMaxSpeed(SPEED);
-  stepper2.setAcceleration(ACCELERATION);
-
-  stepper3.setMaxSpeed(SPEED);
-  stepper3.setAcceleration(ACCELERATION);
-
-
-  servo.attach(SERVO_PIN);
-
-
-  if (tcs.begin()) {
-    //Serial.println("Found sensor");
-  } else {
-    Serial.println("No TCS34725 found ... check your connections");
-    while (1); // halt!
-  }
-
-
-  for (int i=0; i<256; i++) {
-    float x = i;
-    x /= 255;
-    x = pow(x, 2.5);
-    x *= 255;
-
-    if (commonAnode) {
-      gammatable[i] = 255 - x;
-    } else {
-      gammatable[i] = x;
-    }
-   
-  }
-
-
-}
-
-void moveArm(float x, float y, float z) {
-
-  float l1 = 8; 
-  float theta1 = atan2(y, x);
-  float l = sqrt(x * x + y * y);
-  float h = sqrt(l * l + z * z);
-  float phi = atan(z / l);
-  float alpha = acos((h / 2) / l1);
-  float theta2 = phi + alpha;
-  float theta3 = phi - alpha;
-
-
-
-  
-  float steps1 = (float) (theta1 * STEPS_PER_REVOLUTION / (2 * PI));
-  float steps2 = (float) (theta2 * STEPS_PER_REVOLUTION_2 / (2 * PI));
-  float steps3 = (float) (theta3 * STEPS_PER_REVOLUTION_3 / (2 * PI));
-
-  servo.write(0);
-  delay(500);
-  stepper.moveTo(steps1);
-  stepper2.moveTo(steps2);
-  stepper3.moveTo(steps3);
-  delay(500);
-  servo.write(180);
-
-
-}
-
-
-void loop() {
-
-
-
-   float red, green, blue;
-  
-  tcs.setInterrupt(false);  // turn on LED
-
-  delay(10); 
-  tcs.getRGB(&red, &green, &blue);
-  
-  tcs.setInterrupt(true);  // turn off LED
-
-  Serial.print("R:\t"); Serial.print(int(red)); 
-  Serial.print("\tG:\t"); Serial.print(int(green)); 
-  Serial.print("\tB:\t"); Serial.print(int(blue));
-
- Serial.print("\t");
-  Serial.print((int)red, HEX); Serial.print((int)green, HEX); Serial.print((int)blue, HEX);
-  Serial.print("\n");
-
-//  uint16_t red, green, blue, clear;
-//  
- tcs.setInterrupt(false);  // turn on LED
- 
-if(red >100 && green <70 &&blue <50 ){
-  Serial.println("Red color");
-}
-else if (red <100 && green > 100 && blue <100){
-  Serial.println("Green color");
-}
-else if (red <100 && green < 100 && blue >80){
-  Serial.println("BLue color");}
-
-else if(red >100 && green >70 &&blue >40 ){
-  Serial.println("white color");
-}
-
-
-
-  if (bluetooth.available()) {         //// check also using while statement here
-    char command = (char)bluetooth.read();
-
-    Serial.println(command);
-
-    
-    switch (command) {
-      case FORWARD:
-        stepper.moveTo(STEPS_PER_REVOLUTION);
-        
-        break;
-      case REVERSE:
-        stepper.moveTo(-STEPS_PER_REVOLUTION);
-        
-        break;
-      case FORWARD2:
-        stepper2.moveTo(STEPS_PER_REVOLUTION_2);
-        
-        break;
-      case REVERSE2:
-        stepper2.moveTo(-STEPS_PER_REVOLUTION_2);
-           
-        break;
-      case FORWARD3:
-        stepper3.moveTo(STEPS_PER_REVOLUTION_3);
-
-        break;
-      case REVERSE3:
-        stepper3.moveTo(-STEPS_PER_REVOLUTION_3);
-
-        break;     
-      case 'o':
-        servo.write(0);
-        break;
-      case 'w': //stands for wowowo habes habes
-      stepper.stop();
-      stepper2.stop();
-      stepper3.stop();
-        break;     
-      case 'c':
-        servo.write(180);
-        break;
-
-      case 'i' :  //i stands for initialisation
-      servo.write(0);
-      delay(10);
-      stepper.setSpeed(12);
-      stepper.moveTo(-2048);
-      delay(10);
-      stepper2.setSpeed(12);
-      stepper2.moveTo(-2048);
-      delay(10);
-      stepper3.setSpeed(12);
-      stepper3.moveTo(-2048);
-      
-      case 'h':
-     while (command == 'k') { if(red >100 && green <70 &&blue <50 ){
-   Serial.println("Red color");
-    stepper.moveTo(0);
-    servo.write(180);}
-      else {
-      stepper.moveTo(2048);
-    
-    Serial.println();
-    delay(10);
-    }
-
-        break;
-      case 'k':  // k stands for khder
-      while (command == 'k') { 
-    if (red <100 && green > 100 && blue <100){
-     Serial.println("Green color");
-     stepper.moveTo(0);
-     servo.write(180); }
-      else {
-    stepper.moveTo(STEPS_PER_REVOLUTION);
-    Serial.println();
-    delay(10);
-      }
-    }
-        break;
-      case 'z': // z stands for zreg 
-     while (command == 'k') { 
-      if (red <100 && green < 100 && blue >80){
-  Serial.println("BLue color");
-    stepper.moveTo(0);
-    servo.write(180); }
-      else {
-    stepper.moveTo(STEPS_PER_REVOLUTION);
-    Serial.println();
-    delay(10);
-    } }
-
-          break;
-      case 'x':
-        float x, y, z;
-        scanf("%f%f%f",&x,&y,&z);
-        bluetooth.readBytes((uint8_t*)&x, sizeof(x));
-        bluetooth.readBytes((uint8_t*)&y, sizeof(y));
-        bluetooth.readBytes((uint8_t*)&z, sizeof(z));
-        moveArm(x, y, z);
-        break;
-
-      default:
-        Serial.println("Error: unrecognized command");
-
-        break;
-    }
-    }
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// from 4 to 152 =========> bluetooth controll and inverse kinematics
+// else same but with RGB sensor 
 
 #include <SoftwareSerial.h>
 #include <Stepper.h>
@@ -326,11 +30,11 @@ else if(red >100 && green >70 &&blue >40 ){
 Servo servo;
 
 #define STEPS_PER_REVOLUTION 96
-#define STEPS_PER_REVOLUTION_2 128
-#define STEPS_PER_REVOLUTION_3 128
-#define SPEED 300
-#define SPEED_2 60
-#define SPEED_3 60
+#define STEPS_PER_REVOLUTION_2 96
+#define STEPS_PER_REVOLUTION_3 96
+#define SPEED 200
+#define SPEED_2 200
+#define SPEED_3 200
 
 #define FORWARD 'f'
 #define FORWARD2 'p'
@@ -340,15 +44,12 @@ Servo servo;
 #define REVERSE2 'n'
 #define REVERSE3 'l'
 
-#define Color_Detection_Value 15000    //here I just wrote a random value
-
 SoftwareSerial bluetooth(RX_PIN, TX_PIN);
 
 Stepper stepper(STEPS_PER_REVOLUTION, STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
 Stepper stepper2(STEPS_PER_REVOLUTION_2, STEPPER_PIN_5, STEPPER_PIN_6, STEPPER_PIN_7, STEPPER_PIN_8);
 Stepper stepper3(STEPS_PER_REVOLUTION_3, STEPPER_PIN_9, STEPPER_PIN_10, STEPPER_PIN_11, STEPPER_PIN_12);
 
-// Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_16X);
 
 void setup() {
   Serial.begin(9600);
@@ -361,22 +62,10 @@ void setup() {
 
   servo.attach(SERVO_PIN);
 
-  // if (!tcs.begin()) {
-  //   Serial.println("Could not find a valid TCS34725 sensor, check wiring!");
-  //   while (1);
-    
-  // }
 }
 
 void loop() {
 
-  // uint16_t r, g, b, c;;
-  // tcs.getRawData(&r, &g, &b, &c);
-  // Serial.print("R: "); Serial.print(r); 
-  // Serial.print(" G: "); Serial.print(g);
-  // Serial.print(" B: "); Serial.print(b);
-  // Serial.print(" C: "); Serial.print(c);
-  // delay(1000);
 
   if (bluetooth.available()) {
     char command = (char)bluetooth.read();
@@ -415,71 +104,16 @@ void loop() {
         break;     
       case 'c':
         servo.write(180);
-        break;
 
-
-    //   case 'h':  // h stands for hmer 
-    //   servo.write(0);
-    //   stepper.step(-2048);
-    //   stepper2.step(-2048);
-    //   stepper3.step(-2048);   
-    //   if (r > Color_Detection_Value) {
-    // Serial.println("Red detected!");
-    // stepper.step(0);
-    // stepper2.step(2048);
-    // stepper3.step(2048);
-    // servo.write(180);}
-    //   else {
-    // stepper.step(STEPS_PER_REVOLUTION);
-    
-    // Serial.println();
-    // delay(10);
-    // }
-
-    //     break;
-    //   case 'k':  // k stands for khder
-    //   servo.write(0);
-    //   stepper.step(-2048);
-    //   stepper2.step(-2048);
-    //   stepper3.step(-2048);
-    //   if (g > Color_Detection_Value ) {
-    // Serial.println("green detected!");
-    // stepper.step(0);
-    // stepper2.step(2048);
-    // stepper3.step(2048);
-    // servo.write(180); }
-    //   else {
-    // stepper.step(STEPS_PER_REVOLUTION);
-    // Serial.println();
-    // delay(10);
-
-    // }
-    //     break;
-    //   case 'z': // z stands for zreg 
-    //   servo.write(0);
-    //   stepper.step(-2048);
-    //   stepper2.step(-2048);
-    //   stepper3.step(-2048);
-    //   if (b > Color_Detection_Value) {
-    // Serial.println("Blue detected!");
-    // stepper.step(0);
-    // stepper2.step(2048);
-    // stepper3.step(2048);
-    // servo.write(180); }
-    //   else {
-    // stepper.step(STEPS_PER_REVOLUTION);
-    // Serial.println();
-    // delay(10);
-    // }
 
           break;
-      case 'x':
-        float x, y, z;
-        scanf("%f%f%f",&x,&y,&z);
-        bluetooth.readBytes((uint8_t*)&x, sizeof(x));
-        bluetooth.readBytes((uint8_t*)&y, sizeof(y));
-        bluetooth.readBytes((uint8_t*)&z, sizeof(z));
-        moveArm(x, y, z);
+        case 'x':
+  float x, y, z;
+  while (bluetooth.available() < 12); // wait until 12 bytes (3 floats) are available
+  bluetooth.readBytes((uint8_t*)&x, sizeof(x));
+  bluetooth.readBytes((uint8_t*)&y, sizeof(y));
+  bluetooth.readBytes((uint8_t*)&z, sizeof(z));
+  moveArm(x, y, z);
         break;
 
       default:
@@ -508,11 +142,11 @@ void moveArm(float x, float y, float z) {
   float steps3 = (float) (theta3 * STEPS_PER_REVOLUTION_3 / (2 * PI));
 
   servo.write(0);
-  delay(500);
+  delay(10);
   stepper.step(steps1);
   stepper2.step(steps2);
   stepper3.step(steps3);
-  delay(500);
+  delay(10);
   servo.write(180);
 
 }
@@ -576,8 +210,8 @@ void moveArm(float x, float y, float z) {
 Servo servo;
 
 #define STEPS_PER_REVOLUTION 96
-#define STEPS_PER_REVOLUTION_2 128
-#define STEPS_PER_REVOLUTION_3 128
+#define STEPS_PER_REVOLUTION_2 96
+#define STEPS_PER_REVOLUTION_3 96
 #define SPEED 300
 #define SPEED_2 60
 #define SPEED_3 60
