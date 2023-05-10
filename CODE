@@ -1,13 +1,9 @@
-// from 4 to 152 =========> bluetooth controll and inverse kinematics
+// from 4 to 149 =========> bluetooth controll and inverse kinematics
 // else same but with RGB sensor 
 
 #include <SoftwareSerial.h>
 #include <Stepper.h>
 #include <Servo.h>
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_TCS34725.h>
-#include <Adafruit_I2CDevice.h>
 
 #define RX_PIN 2
 #define TX_PIN 3
