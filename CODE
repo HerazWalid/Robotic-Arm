@@ -133,9 +133,9 @@ void moveArm(float x, float y, float z) {
 
 
   
-  float steps1 = (float) (theta1 * STEPS_PER_REVOLUTION / (2 * PI));
-  float steps2 = (float) (theta2 * STEPS_PER_REVOLUTION_2 / (2 * PI));
-  float steps3 = (float) (theta3 * STEPS_PER_REVOLUTION_3 / (2 * PI));
+  float steps1 = (float) ((theta1 * STEPS_PER_REVOLUTION * 21) / (2 * PI));
+  float steps2 = (float) ((theta2 * STEPS_PER_REVOLUTION_2 * 21)/ (2 * PI));
+  float steps3 = (float) ((theta3 * STEPS_PER_REVOLUTION_3 * 21)/ (2 * PI));
 
   servo.write(0);
   delay(10);
@@ -390,9 +390,9 @@ void loop() {
 
 
   
-  float steps1 = (float) (theta1 * STEPS_PER_REVOLUTION / (2 * PI));
-  float steps2 = (float) (theta2 * STEPS_PER_REVOLUTION_2 / (2 * PI));
-  float steps3 = (float) (theta3 * STEPS_PER_REVOLUTION_3 / (2 * PI));
+  float steps1 = (float) ((theta1 * STEPS_PER_REVOLUTION * 21) / (2 * PI));
+  float steps2 = (float) ((theta2 * STEPS_PER_REVOLUTION_2 * 21)/ (2 * PI));
+  float steps3 = (float) ((theta3 * STEPS_PER_REVOLUTION_3* 21)/ (2 * PI));
 
   servo.write(0);
   delay(500);
