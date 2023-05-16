@@ -1,4 +1,4 @@
-// from 4 to 149 =========> bluetooth controll and inverse kinematics
+// from 4 to 166 =========> bluetooth controll and inverse kinematics
 // else same but with RGB sensor 
 
 #include <SoftwareSerial.h>
@@ -28,9 +28,9 @@ Servo servo;
 #define STEPS_PER_REVOLUTION 96
 #define STEPS_PER_REVOLUTION_2 96
 #define STEPS_PER_REVOLUTION_3 96
-#define SPEED 200
-#define SPEED_2 200
-#define SPEED_3 200
+#define SPEED 300
+#define SPEED_2 300
+#define SPEED_3 300
 
 #define FORWARD 'f'
 #define FORWARD2 'p'
@@ -103,12 +103,31 @@ void loop() {
 
 
           break;
-        case 'x':
+      case 'm':
   float x, y, z;
-  while (bluetooth.available() < 12); // wait until 12 bytes (3 floats) are available
-  bluetooth.readBytes((uint8_t*)&x, sizeof(x));
-  bluetooth.readBytes((uint8_t*)&y, sizeof(y));
-  bluetooth.readBytes((uint8_t*)&z, sizeof(z));
+  
+String test = "0";
+Serial.println(test);
+Serial.println("-------");
+
+while (test.indexOf(",") < 0) {
+  test = bluetooth.readString();
+}
+Serial.println(test);
+int pos_index = test.indexOf(",");
+x = test.substring(0, pos_index).toFloat();
+test.remove(0, pos_index + 1);
+
+pos_index = test.indexOf(",");
+y = test.substring(0, pos_index).toFloat();
+test.remove(0, pos_index + 1);
+
+z = test.toFloat();
+
+Serial.println(x, "------");
+Serial.println(y, "------");
+Serial.println(z);
+
   moveArm(x, y, z);
         break;
 
@@ -137,13 +156,12 @@ void moveArm(float x, float y, float z) {
   float steps2 = (float) ((theta2 * STEPS_PER_REVOLUTION_2 * 21.333333334)/ (2 * PI));
   float steps3 = (float) ((theta3 * STEPS_PER_REVOLUTION_3 * 21.333333334)/ (2 * PI));
 
-  servo.write(0);
-  delay(10);
   stepper.step(steps1);
-  stepper2.step(steps2);
-  stepper3.step(steps3);
   delay(10);
-  servo.write(180);
+  stepper2.step(steps2);
+  delay(10);
+  stepper3.step(steps3);
+
 
 }
 
@@ -209,8 +227,8 @@ Servo servo;
 #define STEPS_PER_REVOLUTION_2 96
 #define STEPS_PER_REVOLUTION_3 96
 #define SPEED 300
-#define SPEED_2 60
-#define SPEED_3 60
+#define SPEED_2 300
+#define SPEED_3 300
 
 #define FORWARD 'f'
 #define FORWARD2 'p'
@@ -360,12 +378,31 @@ void loop() {
         delay(10);}} 
       break;
 
-      case 'x':
+   case 'm':
   float x, y, z;
-  while (bluetooth.available() < 12); // wait until 12 bytes (3 floats) are available
-  bluetooth.readBytes((uint8_t*)&x, sizeof(x));
-  bluetooth.readBytes((uint8_t*)&y, sizeof(y));
-  bluetooth.readBytes((uint8_t*)&z, sizeof(z));
+  
+  String test = "0";
+Serial.println(test);
+Serial.println("-------");
+
+while (test.indexOf(",") < 0) {
+  test = bluetooth.readString();
+}
+Serial.println(test);
+int pos_index = test.indexOf(",");
+x = test.substring(0, pos_index).toFloat();
+test.remove(0, pos_index + 1);
+
+pos_index = test.indexOf(",");
+y = test.substring(0, pos_index).toFloat();
+test.remove(0, pos_index + 1);
+
+z = test.toFloat();
+
+Serial.println(x, "------");
+Serial.println(y, "------");
+Serial.println(z);
+
   moveArm(x, y, z);
   break;
 
@@ -394,13 +431,11 @@ void loop() {
   float steps2 = (float) ((theta2 * STEPS_PER_REVOLUTION_2 * 21.333333334)/ (2 * PI));
   float steps3 = (float) ((theta3 * STEPS_PER_REVOLUTION_3* 21.333333334)/ (2 * PI));
 
-  servo.write(0);
-  delay(500);
+
   stepper.step(steps1);
+  delay(10);
   stepper2.step(steps2);
+  delay(10);
   stepper3.step(steps3);
-  delay(500);
-  servo.write(180);
 
 }
-
