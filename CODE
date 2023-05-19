@@ -140,7 +140,7 @@ Serial.println(z);
 }
 void moveArm(float x, float y, float z) {
 
-  float l1 = 8; 
+  float l1 = 11; 
   float theta1 = atan2(y, x);
   float l = sqrt(x * x + y * y);
   float h = sqrt(l * l + z * z);
@@ -415,7 +415,7 @@ Serial.println(z);
   
   void moveArm(float x, float y, float z) {
 
-  float l1 = 8; 
+  float l1 = 11; 
   float theta1 = atan2(y, x);
   float l = sqrt(x * x + y * y);
   float h = sqrt(l * l + z * z);
