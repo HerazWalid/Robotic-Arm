@@ -152,7 +152,7 @@ void moveArm(float x, float y, float z) {
 
 
   
-  float steps1 = (float) ((theta1 * STEPS_PER_REVOLUTION * 21.333333334) / (2 * PI));
+  float steps1 = (float) ((theta1 * STEPS_PER_REVOLUTION * 42.666666667) / (2 * PI));
   float steps2 = (float) ((theta2 * STEPS_PER_REVOLUTION_2 * 21.333333334)/ (2 * PI));
   float steps3 = (float) ((theta3 * STEPS_PER_REVOLUTION_3 * 21.333333334)/ (2 * PI));
 
@@ -427,7 +427,7 @@ Serial.println(z);
 
 
   
-  float steps1 = (float) ((theta1 * STEPS_PER_REVOLUTION * 21.333333334) / (2 * PI));
+  float steps1 = (float) ((theta1 * STEPS_PER_REVOLUTION * 42.666666667) / (2 * PI));
   float steps2 = (float) ((theta2 * STEPS_PER_REVOLUTION_2 * 21.333333334)/ (2 * PI));
   float steps3 = (float) ((theta3 * STEPS_PER_REVOLUTION_3* 21.333333334)/ (2 * PI));
 
