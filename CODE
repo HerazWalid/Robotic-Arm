@@ -1,5 +1,6 @@
-// from 4 to 166 =========> bluetooth controll and inverse kinematics
+// from 5 to 166 =========> bluetooth controll and inverse kinematics
 // else same but with RGB sensor 
+// from 500 w ro7 is the final code, needs to be updated after testing and choosing the initial position 
 
 #include <SoftwareSerial.h>
 #include <Stepper.h>
@@ -425,6 +426,348 @@ Serial.println(z);
   float theta3 = phi - alpha;
 
 
+
+  
+  float steps1 = (float) ((theta1 * STEPS_PER_REVOLUTION * 42.666666667) / (2 * PI));
+  float steps2 = (float) ((theta2 * STEPS_PER_REVOLUTION_2 * 21.333333334)/ (2 * PI));
+  float steps3 = (float) ((theta3 * STEPS_PER_REVOLUTION_3* 21.333333334)/ (2 * PI));
+
+
+  stepper.step(steps1);
+  delay(10);
+  stepper2.step(steps2);
+  delay(10);
+  stepper3.step(steps3);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include <SoftwareSerial.h>
+#include <Stepper.h>
+#include <Servo.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_TCS34725.h>
+#include <Adafruit_I2CDevice.h>
+
+#define RX_PIN 2
+#define TX_PIN 3
+
+
+#define STEPPER_PIN_1 8
+#define STEPPER_PIN_2 10
+#define STEPPER_PIN_3 9
+#define STEPPER_PIN_4 11
+#define STEPPER_PIN_5 4
+#define STEPPER_PIN_6 6
+#define STEPPER_PIN_7 5
+#define STEPPER_PIN_8 7
+#define STEPPER_PIN_9 A0
+#define STEPPER_PIN_10 A2
+#define STEPPER_PIN_11 A1
+#define STEPPER_PIN_12 A3
+
+#define SERVO_PIN 12
+Servo servo;
+
+#define STEPS_PER_REVOLUTION 96
+#define STEPS_PER_REVOLUTION_2 96
+#define STEPS_PER_REVOLUTION_3 96
+#define SPEED 300
+#define SPEED_2 300
+#define SPEED_3 300
+
+#define FORWARD 'f'
+#define FORWARD2 'p'
+#define FORWARD3 'g'
+
+#define REVERSE 'r'
+#define REVERSE2 'n'
+#define REVERSE3 'l'
+
+int i = 0;
+bool s =false;
+bool a =false;
+
+SoftwareSerial bluetooth(RX_PIN, TX_PIN);
+
+Stepper stepper(STEPS_PER_REVOLUTION, STEPPER_PIN_1, STEPPER_PIN_2, STEPPER_PIN_3, STEPPER_PIN_4);
+Stepper stepper2(STEPS_PER_REVOLUTION_2, STEPPER_PIN_5, STEPPER_PIN_6, STEPPER_PIN_7, STEPPER_PIN_8);
+Stepper stepper3(STEPS_PER_REVOLUTION_3, STEPPER_PIN_9, STEPPER_PIN_10, STEPPER_PIN_11, STEPPER_PIN_12);
+
+#define commonAnode true
+byte gammatable[256];
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
+
+uint16_t r, g, b, c;
+
+
+
+
+
+
+void setup() {
+  Serial.begin(9600);
+
+  bluetooth.begin(9600);
+
+  stepper.setSpeed(SPEED);
+  stepper2.setSpeed(SPEED_2);
+  stepper3.setSpeed(SPEED_3);
+
+  servo.attach(SERVO_PIN);  
+
+  if (tcs.begin()) {
+    //Serial.println("Found sensor");
+  } else {
+    Serial.println("No TCS34725 found ... check your connections");
+    while (1); // halt!
+  }
+
+
+  for (int i=0; i<256; i++) {
+    float x = i;
+    x /= 255;
+    x = pow(x, 2.5);
+    x *= 255;
+
+    if (commonAnode) {
+      gammatable[i] = 255 - x;
+    } else {
+      gammatable[i] = x;
+    } 
+}
+}
+void loop() {
+
+  float red, green, blue;
+  
+  tcs.setInterrupt(false);  // turn on LED
+
+  delay(10); 
+  tcs.getRGB(&red, &green, &blue);
+  
+  tcs.setInterrupt(true);  // turn off LED
+
+  Serial.print("R:\t"); Serial.print(int(red)); 
+  Serial.print("\tG:\t"); Serial.print(int(green)); 
+  Serial.print("\tB:\t"); Serial.print(int(blue));
+
+ Serial.print("\t");
+  Serial.print((int)red, HEX); Serial.print((int)green, HEX); Serial.print((int)blue, HEX);
+  Serial.print("\n");
+
+
+ tcs.setInterrupt(false);
+
+ 
+  if (bluetooth.available()) {
+    char command = (char)bluetooth.read();
+
+    Serial.println(command);
+
+    
+    switch (command) {
+      case FORWARD:
+        stepper.step(STEPS_PER_REVOLUTION);
+        
+        break;
+      case REVERSE:
+        stepper.step(-STEPS_PER_REVOLUTION);
+        
+        break;
+      case FORWARD2:
+        stepper2.step(STEPS_PER_REVOLUTION_2);
+        
+        break;
+      case REVERSE2:
+        stepper2.step(-STEPS_PER_REVOLUTION_2);
+           
+        break;
+      case FORWARD3:
+        stepper3.step(STEPS_PER_REVOLUTION_3);
+
+        break;
+      case REVERSE3:
+        stepper3.step(-STEPS_PER_REVOLUTION_3);
+
+        break;     
+      case 'o':
+        servo.write(0);
+
+        break;     
+      case 'c':
+        servo.write(180);
+        break;
+        
+      case 'h':
+      while (true){
+        
+        if (a){ stepper2.step(STEPS_PER_REVOLUTION_2*2);}
+       if(s){break;}        
+      
+      while( command == 'h'){ if(red >100 && green <70 &&blue <50 ){
+        Serial.println("Red color");
+        stepper.step(0);
+        s =true ;
+        a=false;
+        break ;
+        }
+        else {stepper.step(STEPS_PER_REVOLUTION);
+        i++ ;
+        a=true ;
+        if(i==43){break;}
+        delay(10);}}
+      }
+
+      break;
+
+      case 'k' :
+
+      while (true){
+        
+        if (a){ stepper2.step(STEPS_PER_REVOLUTION_2*2);}
+       if(s){break;}        
+      
+      while( command == 'k'){ if(red <100 && green > 100 && blue <100){
+        Serial.println("Green color");
+        stepper.step(0);
+        s =true ;
+        a=false;
+        break ;
+        }
+        else {stepper.step(STEPS_PER_REVOLUTION);
+        i++ ;
+        a=true ;
+        if(i==43){break;}
+        delay(10);}}
+      }
+      break;
+
+      case 'z' :
+
+      while (true){
+        
+        if (a){ stepper2.step(STEPS_PER_REVOLUTION_2*2);}
+       if(s){break;}        
+      
+      while( command == 'z'){ if(red <100 && green < 100 && blue >80){
+        Serial.println("Blue color");
+        stepper.step(0);
+        s =true ;
+        a=false;
+        break ;
+        }
+        else {stepper.step(STEPS_PER_REVOLUTION);
+        i++ ;
+        a=true ;
+        if(i==43){break;}
+        delay(10);}}}
+ 
+        break;
+
+   case 'm':
+  float x, y, z;
+  
+  String test = "0";
+Serial.println(test);
+Serial.println("-------");
+
+while (test.indexOf(",") < 0) {
+  test = bluetooth.readString();
+}
+Serial.println(test);
+int pos_index = test.indexOf(",");
+x = test.substring(0, pos_index).toFloat();
+test.remove(0, pos_index + 1);
+
+pos_index = test.indexOf(",");
+y = test.substring(0, pos_index).toFloat();
+test.remove(0, pos_index + 1);
+
+z = test.toFloat();
+
+Serial.println(x, "------");
+Serial.println(y, "------");
+Serial.println(z);
+
+  moveArm(x, y, z);
+  break;
+
+      default:
+        Serial.println("Error: unrecognized command");
+
+        break;
+    }
+  }}
+  
+  void moveArm(float x, float y, float z) {
+
+  float l1 = 11; 
+  float theta1 = atan2(y, x);
+  float l = sqrt(x * x + y * y);
+  float h = sqrt(l * l + z * z);
+  float phi = atan(z / l);
+  float alpha = acos((h / 2) / l1);
+  float theta2 = phi + alpha;
+  float theta3 = phi - alpha;
+
+// alpha = 1.09893449 if we take x=10 and y = z = 0 
 
   
   float steps1 = (float) ((theta1 * STEPS_PER_REVOLUTION * 42.666666667) / (2 * PI));
