@@ -1,1 +1,1 @@
-# ARTT
+Robotic arm with arduino controllable by bluetooth, it has many automated functions like inverse kinematics and color detection with RGB sensor. I won the first prize of a competition using this code. Feel free to use it ^^.  
